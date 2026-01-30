@@ -1,20 +1,29 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import { RecordingScreen } from "./src/screens/RecordingScreen";
+import { AnalysisScreen } from "./src/screens/AnalysisScreen";
+
+type Screen = "recording" | "analysis";
 
 export default function App() {
+  const [currentScreen, setCurrentScreen] = useState<Screen>("recording");
+
+  const navigateToAnalysis = () => {
+    setCurrentScreen("analysis");
+  };
+
+  const navigateToRecording = () => {
+    setCurrentScreen("recording");
+  };
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <>
+      <StatusBar style="light" />
+      {currentScreen === "recording" ? (
+        <RecordingScreen onNavigateToAnalysis={navigateToAnalysis} />
+      ) : (
+        <AnalysisScreen onBack={navigateToRecording} />
+      )}
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
