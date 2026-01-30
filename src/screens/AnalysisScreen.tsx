@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Pressable,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRecordingStore } from "../store/recordingStore";
 import { ScoreCard } from "../components/ScoreCard";
 import { TimelineMarker } from "../components/TimelineMarker";
@@ -25,23 +26,37 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onBack }) => {
 
   if (isAnalyzing) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={colors.bgDark} />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Analizando tu discurso...</Text>
-          <Text style={styles.loadingSubtext}>
-            Esto puede tomar unos segundos
-          </Text>
-        </View>
-      </SafeAreaView>
+      <View style={styles.container}>
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={colors.bgPrimary}
+        />
+        <LinearGradient
+          colors={[colors.bgPrimary, colors.bgSecondary]}
+          style={styles.gradientBackground}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+        />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.accent} />
+            <Text style={styles.loadingText}>Analizando tu discurso...</Text>
+            <Text style={styles.loadingSubtext}>
+              Esto puede tomar unos segundos
+            </Text>
+          </View>
+        </SafeAreaView>
+      </View>
     );
   }
 
   if (!currentRecording?.analysis) {
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={colors.bgDark} />
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={colors.bgPrimary}
+        />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No hay análisis disponible</Text>
           {onBack && (
@@ -57,125 +72,139 @@ export const AnalysisScreen: React.FC<AnalysisScreenProps> = ({ onBack }) => {
   const { analysis } = currentRecording;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.bgDark} />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.bgPrimary} />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Análisis de Oratoria</Text>
-          <Text style={styles.duration}>
-            Duración: {formatSeconds(analysis.duration)}
-          </Text>
-        </View>
+      {/* Gradient Background */}
+      <LinearGradient
+        colors={[colors.bgPrimary, colors.bgSecondary]}
+        style={styles.gradientBackground}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      />
 
-        {/* Audio Player */}
-        <AudioPlayer
-          audioUri={currentRecording.uri}
-          duration={analysis.duration}
-        />
-
-        {/* Scores Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Puntuaciones</Text>
-          <View style={styles.scoresGrid}>
-            <ScoreCard
-              title="Confianza"
-              score={analysis.scores.confidence}
-              icon="💪"
-            />
-            <ScoreCard
-              title="Claridad"
-              score={analysis.scores.clarity}
-              icon="✨"
-            />
-            <ScoreCard title="Ritmo" score={analysis.scores.pacing} icon="⚡" />
-            <ScoreCard
-              title="Nerviosismo"
-              score={10 - analysis.scores.nervousness}
-              icon="😌"
-            />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>✨ Análisis Completo</Text>
+            <Text style={styles.duration}>
+              Duración: {formatSeconds(analysis.duration)}
+            </Text>
           </View>
-        </View>
 
-        {/* Metrics Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📈 Métricas de Voz</Text>
-          <View style={styles.metricsCard}>
-            <MetricRow
-              label="Palabras por minuto"
-              value={`${analysis.prosodyMetrics.speechRateWpm} PPM`}
-            />
-            <MetricRow
-              label="Pausas detectadas"
-              value={`${analysis.prosodyMetrics.pauseCount}`}
-            />
-            <MetricRow
-              label="Muletillas encontradas"
-              value={`${analysis.fillerWords.length}`}
-            />
-            <MetricRow
-              label="Tono promedio"
-              value={`${analysis.prosodyMetrics.pitchMean.toFixed(0)} Hz`}
-            />
-          </View>
-        </View>
+          {/* Audio Player */}
+          <AudioPlayer
+            audioUri={currentRecording.uri}
+            duration={analysis.duration}
+          />
 
-        {/* Timeline Markers */}
-        {analysis.timelineMarkers.length > 0 && (
+          {/* Scores Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🎯 Puntos de Mejora</Text>
-            {analysis.timelineMarkers.map((marker, index) => (
-              <TimelineMarker
-                key={index}
-                marker={marker}
-                onPress={() => {
-                  // TODO: Seek to timestamp in audio playback
-                  console.log("Jump to", marker.start);
-                }}
+            <Text style={styles.sectionTitle}>📊 Puntuaciones</Text>
+            <View style={styles.scoresGrid}>
+              <ScoreCard
+                title="Confianza"
+                score={analysis.scores.confidence}
+                icon="💪"
               />
-            ))}
+              <ScoreCard
+                title="Claridad"
+                score={analysis.scores.clarity}
+                icon="✨"
+              />
+              <ScoreCard
+                title="Ritmo"
+                score={analysis.scores.pacing}
+                icon="⚡"
+              />
+              <ScoreCard
+                title="Nerviosismo"
+                score={10 - analysis.scores.nervousness}
+                icon="😌"
+              />
+            </View>
           </View>
-        )}
 
-        {/* Recommendations */}
-        {analysis.recommendations.length > 0 && (
+          {/* Metrics Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>💡 Recomendaciones</Text>
-            <View style={styles.recommendationsCard}>
-              {analysis.recommendations.map((rec, index) => (
-                <View key={index} style={styles.recommendationItem}>
-                  <Text style={styles.bullet}>•</Text>
-                  <Text style={styles.recommendationText}>{rec}</Text>
-                </View>
+            <Text style={styles.sectionTitle}>📈 Métricas de Voz</Text>
+            <View style={styles.metricsCard}>
+              <MetricRow
+                label="Palabras por minuto"
+                value={`${analysis.prosodyMetrics.speechRateWpm} PPM`}
+              />
+              <MetricRow
+                label="Pausas detectadas"
+                value={`${analysis.prosodyMetrics.pauseCount}`}
+              />
+              <MetricRow
+                label="Muletillas encontradas"
+                value={`${analysis.fillerWords.length}`}
+              />
+              <MetricRow
+                label="Tono promedio"
+                value={`${analysis.prosodyMetrics.pitchMean.toFixed(0)} Hz`}
+              />
+            </View>
+          </View>
+
+          {/* Timeline Markers */}
+          {analysis.timelineMarkers.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>🎯 Puntos de Mejora</Text>
+              {analysis.timelineMarkers.map((marker, index) => (
+                <TimelineMarker
+                  key={index}
+                  marker={marker}
+                  onPress={() => {
+                    // TODO: Seek to timestamp in audio playback
+                    console.log("Jump to", marker.start);
+                  }}
+                />
               ))}
             </View>
-          </View>
-        )}
+          )}
 
-        {/* Transcription */}
-        {analysis.transcription && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📝 Transcripción</Text>
-            <View style={styles.transcriptionCard}>
-              <Text style={styles.transcriptionText}>
-                {analysis.transcription}
-              </Text>
+          {/* Recommendations */}
+          {analysis.recommendations.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>💡 Recomendaciones</Text>
+              <View style={styles.recommendationsCard}>
+                {analysis.recommendations.map((rec, index) => (
+                  <View key={index} style={styles.recommendationItem}>
+                    <Text style={styles.bullet}>•</Text>
+                    <Text style={styles.recommendationText}>{rec}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
-          </View>
-        )}
+          )}
 
-        {/* Back Button */}
-        {onBack && (
-          <Pressable onPress={onBack} style={styles.bottomButton}>
-            <Text style={styles.bottomButtonText}>Nueva Grabación</Text>
-          </Pressable>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+          {/* Transcription */}
+          {analysis.transcription && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>📝 Transcripción</Text>
+              <View style={styles.transcriptionCard}>
+                <Text style={styles.transcriptionText}>
+                  {analysis.transcription}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Back Button */}
+          {onBack && (
+            <Pressable onPress={onBack} style={styles.bottomButton}>
+              <Text style={styles.bottomButtonText}>Nueva Grabación</Text>
+            </Pressable>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 };
 
@@ -192,7 +221,17 @@ const MetricRow: React.FC<{ label: string; value: string }> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bgDark,
+    backgroundColor: colors.bgPrimary,
+  },
+  gradientBackground: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  safeArea: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,
@@ -237,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   duration: {
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.base,
     color: colors.textSecondary,
   },
   section: {
@@ -247,17 +286,24 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.lg,
     fontWeight: "600",
     color: colors.textPrimary,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   scoresGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.md,
+    gap: spacing.lg,
   },
   metricsCard: {
-    backgroundColor: colors.bgCard,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
   },
   metricRow: {
     flexDirection: "row",
@@ -265,71 +311,95 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.bgDark,
+    borderBottomColor: colors.border,
   },
   metricLabel: {
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.base,
     color: colors.textSecondary,
   },
   metricValue: {
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.base,
     fontWeight: "600",
     color: colors.textPrimary,
     fontVariant: ["tabular-nums"],
   },
   recommendationsCard: {
-    backgroundColor: colors.bgCard,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
   },
   recommendationItem: {
     flexDirection: "row",
     marginBottom: spacing.sm,
   },
   bullet: {
-    fontSize: typography.fontSize.md,
-    color: colors.primary,
+    fontSize: typography.fontSize.base,
+    color: colors.accent,
     marginRight: spacing.sm,
     fontWeight: "700",
   },
   recommendationText: {
     flex: 1,
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.base,
     color: colors.textPrimary,
     lineHeight: 22,
   },
   transcriptionCard: {
-    backgroundColor: colors.bgCard,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
   },
   transcriptionText: {
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.base,
     color: colors.textSecondary,
     lineHeight: 24,
   },
   backButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.lg,
     alignSelf: "center",
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   backButtonText: {
-    fontSize: typography.fontSize.md,
-    fontWeight: "600",
-    color: colors.textPrimary,
+    fontSize: typography.fontSize.lg,
+    fontWeight: "700",
+    color: colors.bgPrimary,
   },
   bottomButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.lg,
     alignItems: "center",
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   bottomButtonText: {
     fontSize: typography.fontSize.lg,
-    fontWeight: "600",
-    color: colors.textPrimary,
+    fontWeight: "700",
+    color: colors.bgPrimary,
   },
 });

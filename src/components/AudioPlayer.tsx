@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Audio } from "expo-av";
-import { colors, spacing, typography } from "../theme";
+import { colors, spacing, typography, borderRadius } from "../theme";
 
 interface AudioPlayerProps {
   audioUri: string;
@@ -79,6 +79,10 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>🎧 Tu Grabación</Text>
+      </View>
+
       <View style={styles.controls}>
         <Pressable
           style={({ pressed }) => [
@@ -89,16 +93,16 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator size="small" color={colors.textPrimary} />
+            <ActivityIndicator size="small" color={colors.bgPrimary} />
           ) : (
             <Text style={styles.playIcon}>{isPlaying ? "⏸" : "▶"}</Text>
           )}
         </Pressable>
 
         <View style={styles.timeInfo}>
-          <Text style={styles.timeText}>
-            {formatTime(position)} / {formatTime(duration * 1000)}
-          </Text>
+          <Text style={styles.timeText}>{formatTime(position)}</Text>
+          <Text style={styles.timeSeparator}>/</Text>
+          <Text style={styles.timeText}>{formatTime(duration * 1000)}</Text>
         </View>
       </View>
 
@@ -112,48 +116,79 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.bgCard,
-    borderRadius: 12,
-    padding: spacing.md,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+    marginBottom: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  header: {
     marginBottom: spacing.lg,
+  },
+  title: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: "700",
+    color: colors.textPrimary,
   },
   controls: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: spacing.sm,
+    marginBottom: spacing.lg,
   },
   playButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primary,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: spacing.md,
+    marginRight: spacing.lg,
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
   playButtonPressed: {
     opacity: 0.8,
+    transform: [{ scale: 0.95 }],
   },
   playIcon: {
-    fontSize: 20,
-    color: colors.textPrimary,
+    fontSize: 24,
+    color: colors.bgPrimary,
   },
   timeInfo: {
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
   },
   timeText: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.xl,
+    color: colors.textPrimary,
+    fontWeight: "600",
+    fontVariant: ["tabular-nums"],
+  },
+  timeSeparator: {
+    fontSize: typography.fontSize.lg,
     color: colors.textSecondary,
-    fontWeight: "500",
+    fontWeight: "400",
   },
   progressBarContainer: {
-    height: 4,
-    backgroundColor: colors.bgDark,
-    borderRadius: 2,
+    height: 6,
+    backgroundColor: colors.bgTertiary,
+    borderRadius: 3,
     overflow: "hidden",
   },
   progressBar: {
     height: "100%",
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent,
+    borderRadius: 3,
   },
 });

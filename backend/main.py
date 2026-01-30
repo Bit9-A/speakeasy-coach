@@ -74,6 +74,15 @@ class ProsodyMetrics(BaseModel):
     energyVariance: float
     speechRateWpm: int
 
+class GeminiAnalysis(BaseModel):
+    content_score: float
+    structure_analysis: dict
+    clarity_analysis: dict
+    persuasion_analysis: dict
+    sentiment_tone: str
+    key_improvements: List[str]
+    positive_highlights: List[str]
+
 class AnalysisResult(BaseModel):
     scores: AnalysisScores
     timelineMarkers: List[TimelineMarker]
@@ -83,6 +92,7 @@ class AnalysisResult(BaseModel):
     transcription: Optional[str] = None
     duration: float
     analyzedAt: str
+    geminiAnalysis: Optional[GeminiAnalysis] = None
 
 @app.get("/")
 async def root():
@@ -164,13 +174,14 @@ async def analyze_speech(file: UploadFile = File(...)):
         from services.prosody_analyzer import ProsodyAnalyzer
         from services.filler_detector import FillerDetector
         from services.explainability import ExplainabilityEngine
+        from services.gemini_coach import GeminiCoach
         
         # Perform prosody analysis
         prosody_analyzer = ProsodyAnalyzer()
         prosody_metrics = prosody_analyzer.analyze(temp_path)
         
         # Detect filler words
-        filler_detector = FillerDetector(model_size="base")
+        filler_detector = FillerDetector(model_size="small")
         fillers = filler_detector.detect(temp_path, language='es')
         transcription = filler_detector.get_transcription(temp_path, language='es')
         
@@ -181,6 +192,22 @@ async def analyze_speech(file: UploadFile = File(...)):
             fillers,
             duration
         )
+
+        # Perform Semantic Analysis with Gemini
+        gemini_coach = GeminiCoach()
+        gemini_result = gemini_coach.analyze(transcription)
+        
+        # Merge recommendations (Physical + Semantic)
+        combined_recommendations = report['recommendations']
+        
+        if gemini_result:
+            # Add top improvement from Gemini as prioritization
+            if gemini_result.get('key_improvements'):
+                combined_recommendations.insert(0, f"🧠 CONTENIDO: {gemini_result['key_improvements'][0]}")
+            
+            # Add positive highlight
+            if gemini_result.get('positive_highlights'):
+                combined_recommendations.append(f"✨ DESTACADO: {gemini_result['positive_highlights'][0]}")
         
         # Build response
         result = AnalysisResult(
@@ -220,10 +247,11 @@ async def analyze_speech(file: UploadFile = File(...)):
                 energyVariance=prosody_metrics.energy_variance,
                 speechRateWpm=prosody_metrics.speech_rate_wpm
             ),
-            recommendations=report['recommendations'],
+            recommendations=combined_recommendations,
             transcription=transcription,
             duration=duration,
-            analyzedAt=datetime.now().isoformat()
+            analyzedAt=datetime.now().isoformat(),
+            geminiAnalysis=GeminiAnalysis(**gemini_result) if gemini_result else None
         )
         
         # Clean up temp file

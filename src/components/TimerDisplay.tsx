@@ -22,10 +22,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.bgCard,
+    backgroundColor: colors.bgSecondary,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   dot: {
     width: 12,

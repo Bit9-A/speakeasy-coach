@@ -56,10 +56,17 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.bgCard,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
     minWidth: 150,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   pressed: {
     opacity: 0.8,
@@ -75,9 +82,9 @@ const styles = StyleSheet.create({
     marginRight: spacing.xs,
   },
   title: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.base,
     color: colors.textSecondary,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   scoreContainer: {
     flexDirection: "row",
@@ -89,13 +96,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   maxScore: {
-    fontSize: typography.fontSize.md,
-    color: colors.textMuted,
+    fontSize: typography.fontSize.base,
+    color: colors.textSecondary,
     marginLeft: spacing.xs,
+    fontWeight: "400",
   },
   progressBar: {
     height: 6,
-    backgroundColor: colors.bgDark,
+    backgroundColor: colors.bgTertiary,
     borderRadius: borderRadius.sm,
     overflow: "hidden",
   },

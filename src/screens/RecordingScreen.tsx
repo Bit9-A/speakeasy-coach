@@ -7,7 +7,9 @@ import {
   StatusBar,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useSpeechRecorder } from "../hooks/useSpeechRecorder";
 import { RecordButton } from "../components/RecordButton";
 import { TimerDisplay } from "../components/TimerDisplay";
@@ -18,10 +20,12 @@ import type { Recording } from "../types";
 
 interface RecordingScreenProps {
   onNavigateToAnalysis?: () => void;
+  onNavigateToHistory?: () => void;
 }
 
 export const RecordingScreen: React.FC<RecordingScreenProps> = ({
   onNavigateToAnalysis,
+  onNavigateToHistory,
 }) => {
   const { audioState, startRecording, stopRecording, hasRecording } =
     useSpeechRecorder();
@@ -104,14 +108,22 @@ export const RecordingScreen: React.FC<RecordingScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.bgDark} />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.bgPrimary} />
+
+      {/* Gradient Background */}
+      <LinearGradient
+        colors={[colors.bgPrimary, colors.bgSecondary]}
+        style={styles.gradientBackground}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      />
 
       {/* Loading Overlay */}
       {isAnalyzing && (
         <View style={styles.loadingOverlay}>
           <View style={styles.loadingCard}>
-            <ActivityIndicator size="large" color={colors.primary} />
+            <ActivityIndicator size="large" color={colors.accent} />
             <Text style={styles.loadingText}>Analizando tu discurso...</Text>
             <Text style={styles.loadingSubtext}>
               Esto puede tomar unos segundos
@@ -120,56 +132,85 @@ export const RecordingScreen: React.FC<RecordingScreenProps> = ({
         </View>
       )}
 
-      <View style={styles.header}>
-        <Text style={styles.title}>SpeakEasy Coach</Text>
-        <Text style={styles.subtitle}>
-          {audioState.isRecording
-            ? "Habla con confianza y claridad"
-            : "Toca el botón para comenzar"}
-        </Text>
-      </View>
-
-      <View style={styles.content}>
-        {audioState.isRecording && (
-          <View style={styles.timerContainer}>
-            <TimerDisplay durationMillis={audioState.durationMillis} />
+      <SafeAreaView style={styles.safeArea}>
+        {/* Glass Header */}
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <Text style={styles.title}>SpeakEasy Coach</Text>
+            {!audioState.isRecording && !isAnalyzing && (
+              <TouchableOpacity
+                onPress={onNavigateToHistory}
+                style={styles.historyButton}
+              >
+                <Text style={styles.historyButtonText}>📜 Historial</Text>
+              </TouchableOpacity>
+            )}
           </View>
-        )}
-
-        <View style={styles.buttonContainer}>
-          <RecordButton
-            isRecording={audioState.isRecording}
-            onPress={handleRecordPress}
-            disabled={isAnalyzing}
-          />
+          <Text style={styles.subtitle}>
+            {audioState.isRecording
+              ? "🎤 Habla con confianza y claridad"
+              : "Toca el botón para comenzar"}
+          </Text>
         </View>
 
-        {audioState.isRecording && (
-          <View style={styles.tipsCard}>
-            <Text style={styles.tipsTitle}>💡 Consejos</Text>
-            <Text style={styles.tipsText}>
-              • Habla de forma natural{"\n"}• Mantén un ritmo constante{"\n"}•
-              Evita muletillas como "ehh" o "este"
-            </Text>
-          </View>
-        )}
-      </View>
+        <View style={styles.content}>
+          {audioState.isRecording && (
+            <View style={styles.timerContainer}>
+              <TimerDisplay durationMillis={audioState.durationMillis} />
+            </View>
+          )}
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          {audioState.isRecording
-            ? "Toca nuevamente para detener"
-            : "Graba un discurso de al menos 30 segundos"}
-        </Text>
-      </View>
-    </SafeAreaView>
+          <View style={styles.buttonContainer}>
+            <RecordButton
+              isRecording={audioState.isRecording}
+              onPress={handleRecordPress}
+              disabled={isAnalyzing}
+            />
+          </View>
+
+          {audioState.isRecording && (
+            <View style={styles.tipsCard}>
+              <Text style={styles.tipsTitle}>💡 Consejos</Text>
+              <Text style={styles.tipsText}>
+                • Habla de forma natural{"\n"}• Mantén un ritmo constante{"\n"}•
+                Evita muletillas como "ehh" o "este"
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            {audioState.isRecording
+              ? "Toca nuevamente para detener"
+              : "Graba un discurso de al menos 30 segundos"}
+          </Text>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bgDark,
+    backgroundColor: colors.bgPrimary,
+  },
+  gradientBackground: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    paddingTop: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
+    alignItems: "center",
   },
   loadingOverlay: {
     position: "absolute",
@@ -177,17 +218,22 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    backgroundColor: colors.overlay,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
   },
   loadingCard: {
-    backgroundColor: colors.bgCard,
-    borderRadius: 16,
-    padding: spacing.xl,
+    backgroundColor: colors.bgSecondary,
+    borderRadius: 20,
+    padding: spacing.xxl,
     alignItems: "center",
     minWidth: 280,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
   },
   loadingText: {
     marginTop: spacing.lg,
@@ -201,12 +247,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: "center",
   },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.lg,
-    alignItems: "center",
-  },
+
   title: {
     fontSize: typography.fontSize.xxxl,
     fontWeight: "700",
@@ -214,9 +255,26 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   subtitle: {
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.base,
     color: colors.textSecondary,
     textAlign: "center",
+  },
+  headerTop: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
+  historyButton: {
+    padding: spacing.sm,
+    backgroundColor: colors.bgTertiary,
+    borderRadius: 8,
+  },
+  historyButtonText: {
+    color: colors.textPrimary,
+    fontWeight: "600",
+    fontSize: typography.fontSize.sm,
   },
   content: {
     flex: 1,
@@ -232,11 +290,18 @@ const styles = StyleSheet.create({
   },
   tipsCard: {
     marginTop: spacing.xxl,
-    backgroundColor: colors.bgCard,
-    borderRadius: 16,
-    padding: spacing.lg,
+    backgroundColor: colors.bgSecondary,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 20,
+    padding: spacing.xl,
     width: "100%",
     maxWidth: 400,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tipsTitle: {
     fontSize: typography.fontSize.lg,
@@ -245,7 +310,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   tipsText: {
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.base,
     color: colors.textSecondary,
     lineHeight: 24,
   },
@@ -256,7 +321,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: typography.fontSize.sm,
-    color: colors.textMuted,
+    color: colors.textTertiary,
     textAlign: "center",
   },
 });
